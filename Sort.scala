@@ -51,5 +51,21 @@ case class CompareAndSwapTester(cas: CompareAndSwap) extends Tester(cas)  {
 	expect ( out1, 23)
 
 	step(1)
+
+	import scala.util.Random
+	import scala.math.{ min, max }
+	for (_ <- 0 until 100) {
+
+		val rnd0 = Random.nextInt(Int.MaxValue)
+		val rnd1 = Random.nextInt(Int.MaxValue)
+
+		poke( in0, rnd0 )
+		poke( in1, rnd1 )
+
+		expect( out0, min( rnd0, rnd1 ))
+		expect( out1, max( rnd0, rnd1 ))
+
+		step(1)
+	}
 }
 
