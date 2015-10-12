@@ -12,6 +12,19 @@ object Main extends App {
 	//chiselMain(argz, () => Module(CompareAndSwap()))
 	chiselMainTest(argz, () => Module(CompareAndSwap(32))){
           cas => new CompareAndSwapTester(cas)}
+
+	/*
+    val argvz = Array(
+		"--backend", "v",
+		"--compile",
+		"--targetDir", "./target")
+
+    chiselMain(argvz, () => Module(CompareAndSwap(8)))
+    */
+
+	chiselMainTest(argz, () => Module(SortStep(6, 32))){
+          sorts => new SortStepTester(sorts)}
+
 }
 
 case class CompareAndSwap(size: Int = 32) extends Module {
@@ -69,3 +82,43 @@ case class CompareAndSwapTester(cas: CompareAndSwap) extends Tester(cas)  {
 	}
 }
 
+case class SortStep(size: Int, width: Int = 32) extends Module {
+	val io = new Bundle {
+		val in = Vec(for (_ <- 0 until size) yield UInt(INPUT, width=width))
+
+		val out = Vec(for (_ <- 0 until size) yield UInt(OUTPUT, width=width))
+	}
+	import io._
+
+	val cas = for (_ <- 0 until (size/2)) yield Module(CompareAndSwap(width))
+
+	for (i <- 0 until (size/2)) {
+		cas(i).io.in0 := in(2*i)
+		cas(i).io.in1 := in(2*i+1)
+	}
+
+	for (i <- 0 until (size/2)) {
+		out(2*i) := cas(i).io.out0
+		out(2*i+1) := cas(i).io.out1
+	}
+}
+
+case class SortStepTester(sorts: SortStep) extends Tester(sorts) {
+	import sorts.io._
+
+	poke( in(0), 6 )
+	poke( in(1), 5 )
+	poke( in(2), 4 )
+	poke( in(3), 3 )
+	poke( in(4), 2 )
+	poke( in(5), 1 )
+
+	expect( out(0), 5 )
+	expect( out(1), 6 )
+	expect( out(2), 3 )
+	expect( out(3), 4 )
+	expect( out(4), 1 )	
+	expect( out(5), 2 )	
+
+	step(1)
+}
