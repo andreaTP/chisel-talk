@@ -22,4 +22,13 @@ case class CompareAndSwap() extends Module {
 		val out0 = UInt(OUTPUT, width=32)
 		val out1 = UInt(OUTPUT, width=32)
 	}
+	import io._
+
+	out0 := in0
+	out1 := in1
+
+	when (in1 < in0) {
+		out0 := in1
+		out1 := in0
+	}	
 }
