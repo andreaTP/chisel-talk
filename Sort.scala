@@ -163,3 +163,26 @@ case class SortStepTester(sorts: SortStep) extends Tester(sorts) {
 	}
 
 }
+
+case class Sort(size: Int, width: Int = 32) extends Module {
+	val io = new Bundle {
+		val in = Vec(for (_ <- 0 until size) yield UInt(INPUT, width=width))
+
+		val out = Vec(for (_ <- 0 until size) yield UInt(OUTPUT, width=width))
+	}
+	import io._
+
+	val steps = for (i <- 0 until size) yield Module(SortStep(size, (i%2)==0, width))
+
+	for (i <- 0 until size) {
+		steps(0).io.in(i) := in(i)
+	}
+
+	for (k <- 1 until size)
+		for (i <- 0 until size) 
+			steps(k).io.in(i) := steps(k-1).io.out(i)
+
+	for (i <- 0 until size)
+		out(i) := steps(size-1).io.out(i)
+}
+
