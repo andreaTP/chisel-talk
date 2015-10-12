@@ -31,6 +31,8 @@ object Main extends App {
     chiselMainTest(argz, () => Module(Sort(6, 32))){
           sort => new SortTester(sort)}	
 
+    chiselMainTest(argz, () => Module(Sort(10, 57))){
+          sort => new SortTester(sort)}
 }
 
 case class CompareAndSwap(size: Int = 32) extends Module {
@@ -210,4 +212,17 @@ case class SortTester(sort: Sort) extends Tester(sort) {
 		step(1)
 	}
 
+	for (_ <- 0 until 100) {
+		import scala.util.Random
+		val values = for (_ <- 0 until sort.size) yield Random.nextInt(Int.MaxValue)
+		val sorted = values.sorted
+
+		for (i <- 0 until sort.size)
+			poke( in(i), values(i))
+
+		for (i <- 0 until sort.size)
+			expect( out(i), sorted(i))
+
+		step(1)
+	}
 }
