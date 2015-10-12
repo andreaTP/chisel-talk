@@ -22,7 +22,10 @@ object Main extends App {
     chiselMain(argvz, () => Module(CompareAndSwap(8)))
     */
 
-	chiselMainTest(argz, () => Module(SortStep(6, 32))){
+	chiselMainTest(argz, () => Module(SortStep(6, true, 32))){
+          sorts => new SortStepTester(sorts)}
+
+	chiselMainTest(argz, () => Module(SortStep(6, false, 32))){
           sorts => new SortStepTester(sorts)}
 
 }
@@ -82,7 +85,7 @@ case class CompareAndSwapTester(cas: CompareAndSwap) extends Tester(cas)  {
 	}
 }
 
-case class SortStep(size: Int, width: Int = 32) extends Module {
+case class SortStep(size: Int, even: Boolean, width: Int = 32) extends Module {
 	val io = new Bundle {
 		val in = Vec(for (_ <- 0 until size) yield UInt(INPUT, width=width))
 
@@ -90,35 +93,73 @@ case class SortStep(size: Int, width: Int = 32) extends Module {
 	}
 	import io._
 
-	val cas = for (_ <- 0 until (size/2)) yield Module(CompareAndSwap(width))
+	if (even) {
+		val cas = for (_ <- 0 until (size/2)) yield Module(CompareAndSwap(width))
 
-	for (i <- 0 until (size/2)) {
-		cas(i).io.in0 := in(2*i)
-		cas(i).io.in1 := in(2*i+1)
-	}
+		for (i <- 0 until (size/2)) {
+			cas(i).io.in0 := in(2*i)
+			cas(i).io.in1 := in(2*i+1)
+		}
 
-	for (i <- 0 until (size/2)) {
-		out(2*i) := cas(i).io.out0
-		out(2*i+1) := cas(i).io.out1
+		for (i <- 0 until (size/2)) {
+			out(2*i) := cas(i).io.out0
+			out(2*i+1) := cas(i).io.out1
+		}
+	} else {
+		val cas = for (_ <- 1 until (size/2)) yield Module(CompareAndSwap(width))
+
+		for (i <- 1 until (size/2)) {
+			cas(i-1).io.in0 := in(2*i-1)
+			cas(i-1).io.in1 := in(2*i)
+		}
+
+		out(0) := in(0)
+		for (i <- 1 until (size/2)) {
+			out(2*i-1) := cas(i-1).io.out0
+			out(2*i) := cas(i-1).io.out1
+		}
+		out(size-1) := in(size-1)
 	}
 }
 
 case class SortStepTester(sorts: SortStep) extends Tester(sorts) {
 	import sorts.io._
 
-	poke( in(0), 6 )
-	poke( in(1), 5 )
-	poke( in(2), 4 )
-	poke( in(3), 3 )
-	poke( in(4), 2 )
-	poke( in(5), 1 )
+	if (sorts.size == 6 && sorts.even) {
 
-	expect( out(0), 5 )
-	expect( out(1), 6 )
-	expect( out(2), 3 )
-	expect( out(3), 4 )
-	expect( out(4), 1 )	
-	expect( out(5), 2 )	
+		poke( in(0), 6 )
+		poke( in(1), 5 )
+		poke( in(2), 4 )
+		poke( in(3), 3 )
+		poke( in(4), 2 )
+		poke( in(5), 1 )
 
-	step(1)
+		expect( out(0), 5 )
+		expect( out(1), 6 )
+		expect( out(2), 3 )
+		expect( out(3), 4 )
+		expect( out(4), 1 )	
+		expect( out(5), 2 )	
+
+		step(1)
+
+	} else if (sorts.size == 6 && !sorts.even) {
+
+		poke( in(0), 6 )
+		poke( in(1), 5 )
+		poke( in(2), 4 )
+		poke( in(3), 3 )
+		poke( in(4), 2 )
+		poke( in(5), 1 )
+
+		expect( out(0), 6 )
+		expect( out(1), 4 )
+		expect( out(2), 5 )
+		expect( out(3), 2 )
+		expect( out(4), 3 )	
+		expect( out(5), 1 )	
+
+		step(1)
+	}
+
 }
