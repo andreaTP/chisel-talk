@@ -9,9 +9,9 @@ object Main extends App {
 		"--test", 
 		"--targetDir", "./target")
 	
-	chiselMain(argz, () => Module(CompareAndSwap()))
-	//chiselMainTest(argz, () => Module(CompareAndSwap())){
-    //      cas => new CompareAndSwapTester(cas)}
+	//chiselMain(argz, () => Module(CompareAndSwap()))
+	chiselMainTest(argz, () => Module(CompareAndSwap())){
+          cas => new CompareAndSwapTester(cas)}
 }
 
 case class CompareAndSwap() extends Module {
@@ -32,3 +32,24 @@ case class CompareAndSwap() extends Module {
 		out1 := in0
 	}	
 }
+
+case class CompareAndSwapTester(cas: CompareAndSwap) extends Tester(cas)  {
+	import cas.io._
+
+	poke ( in0, 10 )
+	poke ( in1, 11 )
+
+	expect ( out0, 10)
+	expect ( out1, 11)
+
+	step(1)
+
+	poke ( in0, 23 )
+	poke ( in1, 22 )
+
+	expect ( out0, 22)
+	expect ( out1, 23)
+
+	step(1)
+}
+
