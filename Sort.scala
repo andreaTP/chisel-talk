@@ -10,17 +10,17 @@ object Main extends App {
 		"--targetDir", "./target")
 	
 	//chiselMain(argz, () => Module(CompareAndSwap()))
-	chiselMainTest(argz, () => Module(CompareAndSwap())){
+	chiselMainTest(argz, () => Module(CompareAndSwap(32))){
           cas => new CompareAndSwapTester(cas)}
 }
 
-case class CompareAndSwap() extends Module {
+case class CompareAndSwap(size: Int = 32) extends Module {
 	val io = new Bundle {
-		val in0 = UInt(INPUT, width=32)
-		val in1 = UInt(INPUT, width=32)
+		val in0 = UInt(INPUT, width=size)
+		val in1 = UInt(INPUT, width=size)
 
-		val out0 = UInt(OUTPUT, width=32)
-		val out1 = UInt(OUTPUT, width=32)
+		val out0 = UInt(OUTPUT, width=size)
+		val out1 = UInt(OUTPUT, width=size)
 	}
 	import io._
 
