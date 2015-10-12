@@ -2,6 +2,7 @@
 import Chisel._
 
 object Main extends App {
+	/*
 	val argz = Array(
 		"--backend", "c", 
 		"--compile", 
@@ -12,16 +13,16 @@ object Main extends App {
 	//chiselMain(argz, () => Module(CompareAndSwap()))
 	chiselMainTest(argz, () => Module(CompareAndSwap(32))){
           cas => new CompareAndSwapTester(cas)}
-
-	/*
+	*/
+	
     val argvz = Array(
 		"--backend", "v",
 		"--compile",
 		"--targetDir", "./target")
 
-    chiselMain(argvz, () => Module(CompareAndSwap(8)))
-    */
-
+    chiselMain(argvz, () => Module(Sort(100, 57)))
+    
+    /*
 	chiselMainTest(argz, () => Module(SortStep(6, true, 32))){
           sorts => new SortStepTester(sorts)}
 
@@ -33,6 +34,7 @@ object Main extends App {
 
     chiselMainTest(argz, () => Module(Sort(10, 57))){
           sort => new SortTester(sort)}
+    */
 }
 
 case class CompareAndSwap(size: Int = 32) extends Module {
