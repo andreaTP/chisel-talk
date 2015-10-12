@@ -28,6 +28,9 @@ object Main extends App {
 	chiselMainTest(argz, () => Module(SortStep(6, false, 32))){
           sorts => new SortStepTester(sorts)}
 
+    chiselMainTest(argz, () => Module(Sort(6, 32))){
+          sort => new SortTester(sort)}	
+
 }
 
 case class CompareAndSwap(size: Int = 32) extends Module {
@@ -186,3 +189,25 @@ case class Sort(size: Int, width: Int = 32) extends Module {
 		out(i) := steps(size-1).io.out(i)
 }
 
+case class SortTester(sort: Sort) extends Tester(sort) {
+	import sort.io._
+
+	if (sort.size == 6) {
+		poke ( in(0), 6 )
+		poke ( in(1), 5 )
+		poke ( in(2), 4 )
+		poke ( in(3), 3 )
+		poke ( in(4), 2 )
+		poke ( in(5), 1 )
+
+		expect ( out(0), 1 )
+		expect ( out(1), 2 )
+		expect ( out(2), 3 )
+		expect ( out(3), 4 )
+		expect ( out(4), 5 )
+		expect ( out(5), 6 )
+
+		step(1)
+	}
+
+}
